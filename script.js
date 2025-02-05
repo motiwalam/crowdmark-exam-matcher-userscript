@@ -91,10 +91,3 @@ async function getStatistics() {
     return computeMatchingStatistics(enrollments);
 }
 
-/*
-// run this first, replacing TOKEN_HERE with one of the crowdmark tokens
-await installAuthToken("TOKEN_HERE");
-
-// run this as many times as you needed once the above succeeds
-await getStatistics();
-*/
