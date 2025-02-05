@@ -68,14 +68,15 @@ function computeMatchingStatistics(enrollments) {
     const unMatched = enrollments.filter(o => o?.matcher_name === undefined);
 
     return {
+        totalMatched: enrollments.filter(o => o?.matcher_name !== undefined).length,
+        totalUnmatched: unMatched.length,
         byMatcher: groupByMatcher(enrollments),
         unMatched: {
             names: unMatched.map(o => o.name),
             studentNums: unMatched.map(o => o.identifier),
             allData: unMatched,
         },
-        totalMatched: enrollments.filter(o => o?.matcher_name !== undefined).length,
-        sourceData: enrollments,
+        allEnrollments: enrollments,
     }
 }
 
