@@ -92,3 +92,10 @@ async function getStatistics() {
     return computeMatchingStatistics(enrollments);
 }
 
+async function printPerMatcherCount() {
+    const stats = await getStatistics();
+    const matcherToMatched = Object.fromEntries(Object.entries(stats.byMatcher).map(([matcher, matcherStats]) => {
+        return [matcher, matcherStats.totalMatched];
+    }));
+    console.table(matcherToMatched);
+}

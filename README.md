@@ -17,3 +17,9 @@ Once the above succeeds, run
 await getStatistics()
 ```
 as many times as you need.
+
+The above prints a lot of information. To just print a table mapping each matcher to the number of papers they've matched, run
+
+```js
+await printPerMatcherCount()
+```
