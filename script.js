@@ -24,6 +24,14 @@ async function tokenInfo(token) {
     }).then(r => r.json());
 }
 
+async function matcherToRoom(tokens) {
+    const tokensInfo = await Promise.all(tokens.map(tokenInfo));
+    const claimedTokens = tokensInfo.filter(o => 'data' in o && o.data?.attributes?.["claimed-at"] != null);
+    return Object.fromEntries(claimedTokens.map(ti => {
+        return [ti?.data?.attributes?.name, ti?.data?.attributes?.["room-number"]?.trim?.()?.toLowerCase?.()]
+    }));
+}
+
 async function claimToken(token, name, room) {
     return await fetch(`https://app.crowdmark.com/api/v1/mobile_tokens/${encodeURI(token)}/claim?name=${encodeURI(name)}&room_number=${encodeURI(room)}`, {
         "credentials": "include",
@@ -84,12 +92,38 @@ async function installAuthToken(token) {
     window[AUTH_TOKEN] = await getAuthToken(token);
 }
 
-async function getStatistics() {
+async function getStatistics(tokens) {
     if (window[AUTH_TOKEN] === undefined) {
         throw new Error("no auth token installed; run installAuthToken(<token>) first");
     }
     const enrollments = await allEnrollments(window[AUTH_TOKEN]);
-    return computeMatchingStatistics(enrollments);
+    const stats = computeMatchingStatistics(enrollments);
+    stats.byRoom = {};
+    if (tokens !== undefined) {
+        const mtr = await matcherToRoom(tokens);
+        const byRoom = {};
+
+        for (const [matcher, matcherStats] of Object.entries(stats.byMatcher)) {
+            const room = mtr[matcher];
+            if (room === undefined) continue;
+
+            if (byRoom[room] === undefined) {
+                byRoom[room] = matcherStats;
+            } else {
+                const a = byRoom[room];
+                const b = matcherStats;
+
+                byRoom[room] = {
+                    totalMatched: a.totalMatched + b.totalMatched,
+                    studentNames: a.studentNames.concat(b.studentNames),
+                    studentNums: a.studentNums.concat(b.studentNums),
+                    allData: a.allData.concat(b.allData),
+                };
+            }
+        }
+        stats.byRoom = byRoom;
+    }
+    return stats
 }
 
 async function printPerMatcherCount() {
@@ -98,4 +132,12 @@ async function printPerMatcherCount() {
         return [matcher, matcherStats.totalMatched];
     }));
     console.table(matcherToMatched);
+}
+
+async function printPerRoomCount(tokens) {
+    const stats = await getStatistics(tokens);
+    const roomToMatched = Object.fromEntries(Object.entries(stats.byRoom).map(([room, roomStats]) => {
+        return [room, roomStats.totalMatched];
+    }));
+    console.table(roomToMatched);
 }

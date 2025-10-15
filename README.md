@@ -23,3 +23,11 @@ The above prints a lot of information. To just print a table mapping each matche
 ```js
 await printPerMatcherCount()
 ```
+
+You can also obtain scan counts per room, but due to limitations in the information provided by Crowdmark's API, this first requires providing the script with all available tokens (the script will not claim any previously unclaimed tokens). If `tokens` is a list of tokens, then
+
+```js
+await printPerRoomCount(tokens)
+```
+
+will print a table mapping each room to the number of papers scanned in each room. To get accurate counts, it is important that the `tokens` list is a superset of all tokens used by the scanners since this script uses the list to map each scanner to the room they are in. 
