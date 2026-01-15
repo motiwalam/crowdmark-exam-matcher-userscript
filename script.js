@@ -141,3 +141,9 @@ async function printPerRoomCount(tokens) {
     }));
     console.table(roomToMatched);
 }
+
+function parseTokensFromTable(table) {
+    const rows = table.split('\n').filter(r => !r.includes('Created'));
+    const tokens = rows.map(r => r.split('\t').at(0).trim());
+    return tokens;
+}
